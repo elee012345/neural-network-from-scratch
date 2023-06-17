@@ -15,3 +15,4 @@ https://course.fast.ai/index.html <- i love this man thank you so much for this
 http://neuralnetworksanddeeplearning.com/index.html
 https://ml-cheatsheet.readthedocs.io/en/latest/index.html
 https://forums.fast.ai/
+https://www.deeplearningbook.org/
