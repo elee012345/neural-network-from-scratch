@@ -1,41 +1,34 @@
 import numpy as np
 
 # calculates results for entire layers, not individual nodes
-class activation_functions():
-
-    def __init__(self) -> None:
-        self.relu = self.relu_function()
-        self.sigmoid = self.sigmoid_function()
-        self.softmax = self.softmax_function()
+class relu_function():
+    def activate(self, z):
+        for i in range(len(z)):
+            z[i] = max(z[i], 0)
+        return z
     
-    class relu_function():
-        def activate(self, z):
-            for i in range(len(z)):
-                z[i] = max(z[i], 0)
-            return z
-        
-        def derivative(self, z):
-            for i in range(len(z)):
-                z[i] = 1 if z[i] > 0 else 0
-            return z
-        
-    class sigmoid_function():
-        def activate(self, z):
-            return 1 / (1 + np.exp(-z))
-        
-        def derivative(self, z):
-            activated = self.activate(z)
-            return np.multiply(activated, ( 1 - activated))
-        
-    class softmax_function():
-        # https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative/
-        def activate(self, z):
-            exps = np.exp(z - np.max(z))
-            return exps / np.sum(exps)
-        # i have no idea if this works lol
-        # stolen directly from https://github.com/SebLague/Neural-Network-Experiments/blob/main/Assets/Scripts/Neural%20Network/Activation/Activation.cs#L129
-        def derivative(self, z):
-            total = sum(np.exp(z))
-            exp_z = np.exp(z)
-            # np.multiply is hadamard product rather than dot product
-            return (np.multiply(np.exp(exp_z), total) - np.multiply(exp_z, exp_z)) / np.multiply(total, total)
+    def derivative(self, z):
+        for i in range(len(z)):
+            z[i] = 1 if z[i] > 0 else 0
+        return z
+    
+class sigmoid_function():
+    def activate(self, z):
+        return 1 / (1 + np.exp(-z))
+    
+    def derivative(self, z):
+        activated = self.activate(z)
+        return np.multiply(activated, ( 1 - activated))
+    
+class softmax_function():
+    # https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative/
+    def activate(self, z):
+        exps = np.exp(z - np.max(z))
+        return exps / np.sum(exps)
+    # i have no idea if this works lol
+    # stolen directly from https://github.com/SebLague/Neural-Network-Experiments/blob/main/Assets/Scripts/Neural%20Network/Activation/Activation.cs#L129
+    def derivative(self, z):
+        total = sum(np.exp(z))
+        exp_z = np.exp(z)
+        # np.multiply is hadamard product rather than dot product
+        return (np.multiply(np.exp(exp_z), total) - np.multiply(exp_z, exp_z)) / np.multiply(total, total)

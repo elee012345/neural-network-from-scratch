@@ -1,7 +1,8 @@
 import numpy as np
+import random
 
 
-class Network():
+class network():
     
 
     def __init__(self, layers, activation_function):
@@ -50,7 +51,8 @@ class Network():
     # http://neuralnetworksanddeeplearning.com/chap2.html#warm_up_a_fast_matrix-based_approach_to_computing_the_output_from_a_neural_network
 
     # a is activations for a layer, so it is a list
-    def feedforward(self):
+    # a is also the initial inputs to the network
+    def feedforward(self, a):
         # biases and then weights because biases is each neuron, and we'll loop through 
         # of the lists of weights as part of the bias
 
@@ -73,7 +75,7 @@ class Network():
             # remember that we initialized the weights going TO each neuron, NOT FROM each neuron
             z = np.dot(a, w) + b
             self.z_vectors.append(z)
-            a = self.activation_function(z)
+            a = self.activation_function.activate(z)
             self.activations.append(a)
 
             # and now we loop through all of the weights and activations and stuff for all the layers until we get to the end
@@ -87,19 +89,30 @@ class Network():
         return a
     
 
-    def train(self):
-        self.feedforward()
+    def train(self, training_data, epochs, mini_batch_size, learning_rate, testing_data=None):
+        for epoch in range(epochs):
+            random.shuffle(training_data)
+            mini_batches = [training_data[batch:batch + mini_batch_size] for batch in range(0, len(training_data), mini_batch_size)]
+            for batch in mini_batches:
+                for inputs, desired_outputs in batch:
+                    self.feedforward(inputs)
+                    bias_gradients, weight_gradients = self.backpropagate(inputs, desired_outputs)
+            # taking the gradient, multiplying it by the average of the learning rate for the mini batch size,
+            # and subtracting it from the biases to update them according to the gradient
+            self.biases = [
+                bias - (learning_rate / mini_batch_size * bias_gradient)
+                for bias, bias_gradient in zip(self.biases, bias_gradients)
+            ]
+            self.weights = [
+                weight - (learning_rate / mini_batch_size * weight_gradient)
+                for weight, weight_gradient in zip(self.weights, weight_gradients)
+            ]
 
 
     # in this function we try to reduce the cost
     # really we call a function that reduces that cost but whatever
 
     # https://www.kaggle.com/code/jhoward/how-does-a-neural-net-really-work
-    def gradient_descent(self, training_data, epochs, mini_batch_size, learning_rate, testing_date=None):
-        pass
-
-    def update_mini_batch(self, mini_batch):
-        pass
 
     def backpropagate(self, inputs, desired_outputs):
         weight_gradients = [np.zeros_like(self.weights)]
@@ -134,7 +147,7 @@ class Network():
         # next layer's nodes
         # and then multiply it by the derivative of the activation function going to it from the weighted inputs
         # from the previous layers
-        for layer in range(len(self.layers)-2, 0, -1):
+        for layer in range(len(self.layers)-2, 1, -1):
             
 
 
@@ -161,12 +174,25 @@ class Network():
             # and then multiply it by the delta and add it together and so on
             weight_gradients[layer] = np.dot(delta, self.activations[layer-1].transpose())
         
-        return (bias_gradients, weight_gradients)
+        return bias_gradients, weight_gradients
 
 
 
 
         # returns the gradients
+
+
+        # first calculate the cost in relation to the activation of the outputs nodes
+        # by taking the derivative of that activation times the weighted input going into it
+
+        # then we find how each of the weights going into each of the output node values is affecting the cost
+        # we do this by taking the activations of the layer to the left and multiplying them by the values that we calculated above
+
+        # then we need to find the gradients of all the hidden nodes and weights and stuff
+        # this is basically the same thing
+        # with out output layer, though, we only had to evaluate the derivative of the cost there
+        # with the hidden nodes, we take the values from the nodes in the layer to the right and use those to calculate the 
+        # weight and bias gradients
 
 
 

@@ -1,9 +1,11 @@
 import mnist_loader
-import network
-from activation_functions import activation_functions
+from network import network
+import activation_functions
+
+
 training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
-a = activation_functions()
-softmax = a.softmax
+softmax = activation_functions.softmax_function()
 net = network([784, 30, 10], softmax)
-net.gradient_descent(training_data, 30, 10, 3.0, test_data=test_data)
+net.train(training_data, 30, 10, 3.0, testing_data=test_data)
+
 

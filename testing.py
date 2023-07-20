@@ -1,22 +1,21 @@
-# import numpy as np
-
-# a = np.zeros((3, 2))
-# print(a)
-# print(a.shape)
-# b = [np.zeros(x.shape) for x in a]
-# print(b)
-# c = np.zeros_like(a)
-# print(c)
-# print(c[-1])
-# print(b[-1])
-
-from activation_functions import activation_functions
 import numpy as np
 
-a = activation_functions()
-softmax = a.softmax
-relu = a.relu
-sigmoid = a.sigmoid
+a = np.zeros((3, 2))
+print(a)
+print(a.shape)
+b = [np.zeros(x.shape) for x in a]
+print(b)
+c = np.zeros_like(a)
+print(c)
+print(c[-1])
+print(b[-1])
+
+import activation_functions
+import numpy as np
+
+softmax = activation_functions.softmax_function()
+relu = activation_functions.relu_function()
+sigmoid = activation_functions.sigmoid_function()
 
 arr = np.array([-1, 1, 2, 3, 4])
 print(softmax.activate(arr))
@@ -65,3 +64,4 @@ def backward_propagate_error(network, expected):
 		for j in range(len(layer)):
 			neuron = layer[j]
 			neuron['delta'] = errors[j] * activation_derivative(neuron['output'])
+
