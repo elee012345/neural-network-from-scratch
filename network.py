@@ -41,8 +41,6 @@ class network():
 
         self.z_vectors = []
 
-        self.output = []
-
         # self.activations = [np.zeros(size) for size in self.layers]
         self.activations = []
 
@@ -60,6 +58,10 @@ class network():
         # so we're calculating the resulting values of the layer after 'a' (the parameter) but assigning those values back to a (the current layer)
         # because making another variable is just too much work
         
+
+        self.z_vectors = []
+        self.activations = []
+
         for b, w in zip(self.biases, self.weights):
             # think about how a dot product works:
             # multiply matrix rows by columns of the second matrix and add
@@ -74,7 +76,7 @@ class network():
             # for the current layer
             # remember that we initialized the weights going TO each neuron, NOT FROM each neuron
             z = np.dot(w, a) + b
-            #print(b)
+            
             self.z_vectors.append(z)
             a = self.activation_function.activate(z)
             self.activations.append(a)
@@ -84,11 +86,16 @@ class network():
 
             # each loop calculates the activations for a single layer, not single neurons
 
-        self.output = a
 
         # a is now the activations for the final (output) layer
         return a
     
+
+    def get_outputs(self, a):
+        for b, w in zip(self.biases, self.weights):
+            z = np.dot(w, a) + b
+            a = self.activation_function.activate(z)
+        return a
 
     def train(self, training_data, epochs, mini_batch_size, learning_rate, testing_data=None):
         for epoch in range(epochs):
@@ -98,6 +105,10 @@ class network():
                 for inputs, desired_outputs in batch:
                     self.feedforward(inputs)
                     bias_gradients, weight_gradients = self.backpropagate(inputs, desired_outputs)
+
+                
+                
+                
             # taking the gradient, multiplying it by the average of the learning rate for the mini batch size,
             # and subtracting it from the biases to update them according to the gradient
             self.biases = [
@@ -108,6 +119,20 @@ class network():
                 weight - (learning_rate / mini_batch_size * weight_gradient)
                 for weight, weight_gradient in zip(self.weights, weight_gradients)
             ]
+            print("Epoch " + str(epoch + 1) + " finished out of " + str(epochs))
+            # why does this break things?
+            print("Average cost " + str(self.test_progress(testing_data)))
+
+            
+            
+
+    def test_progress(self, test_data):
+        total = 0
+        for inputs, desired_outputs in test_data:
+            total += self.cost_derivative(self.get_outputs(inputs), desired_outputs)
+
+        average_cost = total/len(test_data[0])
+        return average_cost
 
 
     # in this function we try to reduce the cost
@@ -120,7 +145,6 @@ class network():
         weight_gradients = [np.zeros(w.shape) for w in self.weights]
         bias_gradients = [np.zeros(b.shape) for b in self.biases]
         
-        #activations = [inputs]
 
         # elementwise multiplication (activation for each neuron multiplied by cost derivative of each neuron)
         
