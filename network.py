@@ -102,26 +102,39 @@ class network():
             random.shuffle(training_data)
             mini_batches = [training_data[batch:batch + mini_batch_size] for batch in range(0, len(training_data), mini_batch_size)]
             for batch in mini_batches:
+                # holds the accumulated gradients within the mini batch
+                bias_gradients = [np.zeros(b.shape) for b in self.biases]
+                weight_gradients = [np.zeros(w.shape) for w in self.weights]
                 for inputs, desired_outputs in batch:
-                    self.feedforward(inputs)
-                    bias_gradients, weight_gradients = self.backpropagate(inputs, desired_outputs)
+                    delta_bias_gradients, delta_weight_gradients = self.backpropagate(inputs, desired_outputs)
+                    # accumulate gradients from the mini batch
+                    bias_gradients = [
+                        b + db
+                        for b, db in zip(bias_gradients, delta_bias_gradients)
+                    ]
+                    weight_gradients = [
+                        w + dw
+                        for w, dw in zip(weight_gradients, delta_weight_gradients)
+                    ]
 
                 
-                
-                
-            # taking the gradient, multiplying it by the average of the learning rate for the mini batch size,
-            # and subtracting it from the biases to update them according to the gradient
-            self.biases = [
-                bias - (learning_rate / mini_batch_size * bias_gradient)
-                for bias, bias_gradient in zip(self.biases, bias_gradients)
-            ]
-            self.weights = [
-                weight - (learning_rate / mini_batch_size * weight_gradient)
-                for weight, weight_gradient in zip(self.weights, weight_gradients)
-            ]
+                # taking the gradient, multiplying it by the average of the learning rate for the mini batch size,
+                # and subtracting it from the biases to update them according to the gradient
+                self.biases = [
+                    bias - (learning_rate / mini_batch_size * bias_gradient)
+                    for bias, bias_gradient in zip(self.biases, bias_gradients)
+                ]
+                self.weights = [
+                    weight - (learning_rate / mini_batch_size * weight_gradient)
+                    for weight, weight_gradient in zip(self.weights, weight_gradients)
+                ]
+
             print("Epoch " + str(epoch + 1) + " finished out of " + str(epochs))
-            # why does this break things?
-            print("Average cost " + str(self.test_progress(testing_data)))
+            cost = self.test_progress(testing_data)
+            print(f"Average costs {cost}")
+            print(f"Average cost {sum(cost)/10}")
+            print(f"eval: {self.evaluate(testing_data)} / {len(testing_data)}" )
+            
 
             
             
@@ -134,6 +147,15 @@ class network():
         average_cost = total/len(test_data[0])
         return average_cost
 
+    def evaluate(self, test_data):
+        """Return the number of test inputs for which the neural
+        network outputs the correct result. Note that the neural
+        network's output is assumed to be the index of whichever
+        neuron in the final layer has the highest activation."""
+        test_results = [(np.argmax(self.feedforward(x)), y)
+                        for (x, y) in test_data]
+        return sum(int(x == y) for (x, y) in test_results)
+
 
     # in this function we try to reduce the cost
     # really we call a function that reduces that cost but whatever
@@ -141,6 +163,8 @@ class network():
     # https://www.kaggle.com/code/jhoward/how-does-a-neural-net-really-work
 
     def backpropagate(self, inputs, desired_outputs):
+        self.feedforward(inputs)
+
         # can't do zeros_like() here because numpy is mean >:(
         weight_gradients = [np.zeros(w.shape) for w in self.weights]
         bias_gradients = [np.zeros(b.shape) for b in self.biases]
@@ -176,7 +200,6 @@ class network():
         # from the previous layers
         for layer in range(len(self.layers)-2, 1, -1):
             
-
 
             # there are two ways to do this: 
             # we can take the gradients for each layer, actually update the layers and apply the gradients to them with gradient descent, and repeat

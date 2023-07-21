@@ -10,27 +10,27 @@ import numpy as np
 # print(c[-1])
 # print(b[-1])
 
-# import activation_functions
-# import numpy as np
+import activation_functions
+# # import numpy as np
 
-# softmax = activation_functions.softmax_function()
+# #softmax = activation_functions.softmax_function()
 # relu = activation_functions.relu_function()
-# sigmoid = activation_functions.sigmoid_function()
+# #sigmoid = activation_functions.sigmoid_function()
 
-# arr = np.array([-1, 1, 2, 3, 4])
-# print(softmax.activate(arr))
-# print(softmax.derivative(arr))
+# arr = np.array([[-1, 1, 2, 3, 5, 4], [4, 2, 6, 2, -6, -13.5]])
+# #print(softmax.activate(arr))
+# #print(softmax.derivative(arr))
 # print(relu.activate(arr))
 # print(relu.derivative(arr))
-# print(sigmoid.activate(arr))
-# print(sigmoid.derivative(arr))
+# #print(sigmoid.activate(arr))
+# #print(sigmoid.derivative(arr))
 
 
 
-# arr1 = np.array([[1, 2], [3, 4]])
-# arr2 = np.array([[4, 3], [2, 1]])
-# arr3 = np.array([[2, 2], [2, 2]])
-# arr4 = np.array([[1, 2], [3, 4], [5, 6]])
+arr1 = np.array([[1, 2], [3, 4]])
+arr2 = np.array([[4, 3], [2, 1]])
+arr3 = np.array([[2, 2], [2, 2]])
+arr4 = np.array([[1, 2], [3, 4], [5, 6]])
 
 
 # print(arr4)
@@ -65,6 +65,12 @@ import numpy as np
 # 			neuron = layer[j]
 # 			neuron['delta'] = errors[j] * activation_derivative(neuron['output'])
 
-arr5 = np.array([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
-arr6 = np.zeros_like(arr5)
-print(arr6)
+# arr5 = np.array([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+# arr6 = np.zeros_like(arr5)
+# print(arr6)
+
+sizes = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+length = len(sizes)
+for i in range(length-2, 0, -1):
+    print(sizes[i])
+    print(sizes[i+1])
