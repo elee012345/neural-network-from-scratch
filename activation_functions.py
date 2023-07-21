@@ -2,14 +2,15 @@ import numpy as np
 
 # calculates results for entire layers, not individual nodes
 class relu_function():
+    # stores individual elements in lists which is annoying
     def activate(self, z):
         for i in range(len(z)):
-            z[i] = max(z[i], 0)
+            z[i][0] = max(z[i], 0)
         return z
     
     def derivative(self, z):
         for i in range(len(z)):
-            z[i] = 1 if z[i] > 0 else 0
+            z[i][0] = 1 if z[i] > 0 else 0
         return z
     
 class sigmoid_function():

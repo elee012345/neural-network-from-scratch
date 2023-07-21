@@ -24,7 +24,7 @@ class network():
         # randn creates an ARRAY, NOT a single value
 
         # we ignore layer 0 because that's the input layer
-        self.biases = [np.random.randn(1, b) for b in layers[1:]]
+        self.biases = [np.random.randn(b, 1) for b in layers[1:]]
         # zip creates tuples of each layer to the next 
         # so in order something like [(0, 1), (1, 2), (2, 3)]
         # with real layers something like [(4, 10), (10, 15), (15, 3)] for a network of layers 4, 10, 15, 3
@@ -73,7 +73,8 @@ class network():
             # each loop will multiply the array of weights by the previous activations and then add the bias and sigmoid that
             # for the current layer
             # remember that we initialized the weights going TO each neuron, NOT FROM each neuron
-            z = np.dot(a, w) + b
+            z = np.dot(w, a) + b
+            #print(b)
             self.z_vectors.append(z)
             a = self.activation_function.activate(z)
             self.activations.append(a)
@@ -115,13 +116,15 @@ class network():
     # https://www.kaggle.com/code/jhoward/how-does-a-neural-net-really-work
 
     def backpropagate(self, inputs, desired_outputs):
-        weight_gradients = [np.zeros_like(self.weights)]
-        bias_gradients = [np.zeros_like(self.biases)]
+        # can't do zeros_like() here because numpy is mean >:(
+        weight_gradients = [np.zeros(w.shape) for w in self.weights]
+        bias_gradients = [np.zeros(b.shape) for b in self.biases]
         
-        activations = [inputs]
+        #activations = [inputs]
 
         # elementwise multiplication (activation for each neuron multiplied by cost derivative of each neuron)
-        delta = self.cost_derivative(activations[-1], desired_outputs[-1]) * self.activation_function.derivative(self.z_vectors[-1])
+        
+        delta = self.cost_derivative(self.activations[-1], desired_outputs[-1]) * self.activation_function.derivative(self.z_vectors[-1])
         # the derivatives for biases and weights are basically the same except that
         # to get the weight derivative, you multply the bias derivative by the weight
         # hence why we don't calculate it separately for both the weights and biases
@@ -198,7 +201,7 @@ class network():
 
 
 
-    def cost_derivative(actual_output, desired_output):
+    def cost_derivative(self, actual_output, desired_output):
         # the actual derivative of the cost function (squared mean error function)
         # is 2(output - desired output) but we multiply this value by the learning rate anyway
         # so it doesn't matter
