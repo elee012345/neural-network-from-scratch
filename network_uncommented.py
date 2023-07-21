@@ -8,20 +8,8 @@ class network():
         self.activation_function = activation_function
         self.biases = [np.random.randn(b, 1) for b in layers[1:]]
         self.weights = [np.random.randn(k, j) for j, k in zip(layers[:-1], layers[1:])]
-        self.z_vectors = []
-        self.activations = []
 
     def feedforward(self, a):
-        self.z_vectors = []
-        self.activations = []
-        for b, w in zip(self.biases, self.weights):
-            z = np.dot(w, a) + b
-            self.z_vectors.append(z)
-            a = self.activation_function.activate(z)
-            self.activations.append(a)
-        return a
-    
-    def get_outputs(self, a):
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, a) + b
             a = self.activation_function.activate(z)
@@ -62,7 +50,7 @@ class network():
     def test_progress(self, test_data):
         total = 0
         for inputs, desired_outputs in test_data:
-            total += self.cost_derivative(self.get_outputs(inputs), desired_outputs)
+            total += self.cost_derivative(self.feedforward(inputs), desired_outputs)
         average_cost = total/len(test_data[0])
         return average_cost
 
@@ -73,17 +61,30 @@ class network():
 
 
     def backpropagate(self, inputs, desired_outputs):
-        self.feedforward(inputs)
+        
+        
+
         weight_gradients = [np.zeros(w.shape) for w in self.weights]
         bias_gradients = [np.zeros(b.shape) for b in self.biases]
-        delta = self.cost_derivative(self.activations[-1], desired_outputs[-1]) * self.activation_function.derivative(self.z_vectors[-1])
+
+        z_vectors = []
+        a = inputs
+        activations = [inputs]
+        for b, w in zip(self.biases, self.weights):
+            z = np.dot(w, a) + b
+            z_vectors.append(z)
+            a = self.activation_function.activate(z)
+            activations.append(a)
+
+
+        delta = self.cost_derivative(activations[-1], desired_outputs) * self.activation_function.derivative(z_vectors[-1])
         bias_gradients[-1] = delta
-        weight_gradients[-1] = np.dot(delta, self.activations[-2].transpose())
-        for layer in range(len(self.layers)-2, 1, -1):
-            activation_derivative = self.activation_function.derivative(self.z_vectors[layer])
-            delta = np.dot(self.weights[layer + 1].transpose(), delta) * activation_derivative
-            bias_gradients[layer] = delta
-            weight_gradients[layer] = np.dot(delta, self.activations[layer-1].transpose())
+        weight_gradients[-1] = np.dot(delta, activations[-2].transpose())
+        for layer in range(2, len(self.layers)):
+            activation_derivative = self.activation_function.derivative(z_vectors[-layer])
+            delta = np.dot(self.weights[-layer + 1].transpose(), delta) * activation_derivative
+            bias_gradients[-layer] = delta
+            weight_gradients[-layer] = np.dot(delta, activations[-layer-1].transpose())
         return bias_gradients, weight_gradients
 
     def cost_derivative(self, actual_output, desired_output):

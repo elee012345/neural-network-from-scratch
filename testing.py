@@ -69,8 +69,7 @@ arr4 = np.array([[1, 2], [3, 4], [5, 6]])
 # arr6 = np.zeros_like(arr5)
 # print(arr6)
 
-sizes = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-length = len(sizes)
-for i in range(length-2, 0, -1):
-    print(sizes[i])
-    print(sizes[i+1])
+np.random.seed(0)
+random_thing = np.random.randn()
+print(random_thing)
+print(np.random.randn())

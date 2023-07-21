@@ -6,6 +6,8 @@ class network():
     
 
     def __init__(self, layers, activation_function):
+
+
         self.layers = layers
 
         self.activation_function = activation_function
@@ -60,7 +62,7 @@ class network():
         
 
         self.z_vectors = []
-        self.activations = []
+        self.activations = [a]
 
         for b, w in zip(self.biases, self.weights):
             # think about how a dot product works:
@@ -172,7 +174,7 @@ class network():
 
         # elementwise multiplication (activation for each neuron multiplied by cost derivative of each neuron)
         
-        delta = self.cost_derivative(self.activations[-1], desired_outputs[-1]) * self.activation_function.derivative(self.z_vectors[-1])
+        delta = self.cost_derivative(self.activations[-1], desired_outputs) * self.activation_function.derivative(self.z_vectors[-1])
         # the derivatives for biases and weights are basically the same except that
         # to get the weight derivative, you multply the bias derivative by the weight
         # hence why we don't calculate it separately for both the weights and biases
@@ -198,7 +200,7 @@ class network():
         # next layer's nodes
         # and then multiply it by the derivative of the activation function going to it from the weighted inputs
         # from the previous layers
-        for layer in range(len(self.layers)-2, 1, -1):
+        for layer in range(2, len(self.layers)):
             
 
             # there are two ways to do this: 
@@ -214,15 +216,15 @@ class network():
             # Where error_j is the error signal from the jth neuron in the output layer, weight_k is the weight that connects the kth neuron to the current neuron and output is the output for the current neuron.
             # https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/
 
-            activation_derivative = self.activation_function.derivative(self.z_vectors[layer])
+            activation_derivative = self.activation_function.derivative(self.z_vectors[-layer])
             # need to transpose again
             # taking the nodes from the layer to the right and multiplying them and adding them up by delta/the gradient
             # then multiplying by the activation derivative
-            delta = np.dot(self.weights[layer + 1].transpose(), delta) * activation_derivative
-            bias_gradients[layer] = delta
+            delta = np.dot(self.weights[-layer + 1].transpose(), delta) * activation_derivative
+            bias_gradients[-layer] = delta
             # take the activations of the neurons from the layer to the left (the previous layer)
             # and then multiply it by the delta and add it together and so on
-            weight_gradients[layer] = np.dot(delta, self.activations[layer-1].transpose())
+            weight_gradients[-layer] = np.dot(delta, self.activations[-layer-1].transpose())
         
         return bias_gradients, weight_gradients
 
