@@ -31,7 +31,8 @@ arr1 = np.array([[1, 2], [3, 4]])
 arr2 = np.array([[4, 3], [2, 1]])
 arr3 = np.array([[2, 2], [2, 2]])
 arr4 = np.array([[1, 2], [3, 4], [5, 6]])
-
+arr9 = np.array([23, 8, 2, 6, 3, 7, 1])
+print(np.argmax(arr9))
 
 # print(arr4)
 # print(arr4.transpose())
@@ -69,7 +70,3 @@ arr4 = np.array([[1, 2], [3, 4], [5, 6]])
 # arr6 = np.zeros_like(arr5)
 # print(arr6)
 
-np.random.seed(0)
-random_thing = np.random.randn()
-print(random_thing)
-print(np.random.randn())

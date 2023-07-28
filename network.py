@@ -132,22 +132,29 @@ class network():
                 ]
 
             print("Epoch " + str(epoch + 1) + " finished out of " + str(epochs))
-            cost = self.test_progress(testing_data)
-            print(f"Average costs {cost}")
-            print(f"Average cost {sum(cost)/10}")
             print(f"eval: {self.evaluate(testing_data)} / {len(testing_data)}" )
+
+            thing = self.test_progress(testing_data)
+            with open("thing.py", "w") as file:
+                file.write(str(thing))
+            print()
             
 
-            
+    def dif(self, test_data):
+        outputs = [(self.feedforward(actual), desired) for actual, desired in test_data]
+        return outputs
             
 
+    def cost(self, expected, actual):
+        err = (expected - actual)
+        return err * err
+    
     def test_progress(self, test_data):
-        total = 0
-        for inputs, desired_outputs in test_data:
-            total += self.cost_derivative(self.get_outputs(inputs), desired_outputs)
+        dif = self.dif(test_data)
+        probabilities = [softmax(x[0]) for x in dif]
 
-        average_cost = total/len(test_data[0])
-        return average_cost
+        return probabilities
+
 
     def evaluate(self, test_data):
         """Return the number of test inputs for which the neural
@@ -259,3 +266,10 @@ class network():
         return (actual_output - desired_output)
     
 
+def softmax(z):
+    exps = np.exp(z - np.max(z))
+    return exps / np.sum(exps)
+
+def othersoftmax(z):
+    exp = np.exp(z)
+    return exp/np.sum(exp)
