@@ -94,9 +94,13 @@ class network():
     
 
     def get_outputs(self, a):
+        end = len(self.layers)
+        count = 1
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, a) + b
-            a = self.activation_function.activate(z)
+            if # last layer of network
+                a = self.activation_function.activate(z)
+            count += 1
         return a
 
     def train(self, training_data, epochs, mini_batch_size, learning_rate, testing_data=None):
