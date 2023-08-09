@@ -100,6 +100,9 @@ class network():
         return a
 
     def train(self, training_data, epochs, mini_batch_size, learning_rate, testing_data=None):
+        if testing_data:
+            self.vectorized_testing_data = [(expected, vectorize(desired)) for (expected, desired) in testing_data]
+
         for epoch in range(epochs):
             random.shuffle(training_data)
             mini_batches = [training_data[batch:batch + mini_batch_size] for batch in range(0, len(training_data), mini_batch_size)]
@@ -134,26 +137,22 @@ class network():
             print("Epoch " + str(epoch + 1) + " finished out of " + str(epochs))
             print(f"eval: {self.evaluate(testing_data)} / {len(testing_data)}" )
 
-            thing = self.test_progress(testing_data)
-            with open("thing.py", "w") as file:
-                file.write(str(thing))
-            print()
-            
-
-    def dif(self, test_data):
-        outputs = [(self.feedforward(actual), desired) for actual, desired in test_data]
-        return outputs
-            
+        thing = self.test_progress()
+        with open("thing.py", "w") as file:
+            file.write(str(thing))
+        print()
+                       
 
     def cost(self, expected, actual):
         err = (expected - actual)
         return err * err
     
-    def test_progress(self, test_data):
-        dif = self.dif(test_data)
-        probabilities = [softmax(x[0]) for x in dif]
-
-        return probabilities
+    def test_progress(self):
+        dif = [(self.feedforward(inputs), desired) for inputs, desired in self.vectorized_testing_data]
+        #probabilities = [softmax(x[0]) for x in dif]
+        #dif = [probabilities - x[1] for x in dif]
+        # probabilities_and_dif = [softmax(x[0]) - x[1] for x in dif]
+        return dif
 
 
     def evaluate(self, test_data):
@@ -271,5 +270,10 @@ def softmax(z):
     return exps / np.sum(exps)
 
 def othersoftmax(z):
-    exp = np.exp(z)
-    return exp/np.sum(exp)
+    exp_ = np.exp(z)
+    return exp_/np.sum(exp_)
+
+def vectorize(digit):
+    vector = np.zeros((10, 1))
+    vector[digit] = 1
+    return vector

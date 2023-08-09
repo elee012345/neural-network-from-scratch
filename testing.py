@@ -25,14 +25,34 @@ import activation_functions
 # #print(sigmoid.activate(arr))
 # #print(sigmoid.derivative(arr))
 
-
+def softmax(z):
+    exps = np.exp(z - np.max(z))
+    return exps / np.sum(exps)
 
 arr1 = np.array([[1, 2], [3, 4]])
 arr2 = np.array([[4, 3], [2, 1]])
 arr3 = np.array([[2, 2], [2, 2]])
 arr4 = np.array([[1, 2], [3, 4], [5, 6]])
 arr9 = np.array([23, 8, 2, 6, 3, 7, 1])
-print(np.argmax(arr9))
+#print(np.argmax(arr9))
+arr5 = [[1], [2], [3], [4]]
+#print(softmax(arr5))
+
+arr6 = [[3.19752616e-02],
+       [5.51932336e-05],
+       [4.06056380e-01],
+       [1.92396888e-02],
+       [1.13337678e-06],
+       [8.52853102e-03],
+       [3.63178411e-02],
+       [9.78687679e-06],
+       [3.41135023e-03],
+       [1.16886951e-07]]
+
+print(np.sum(arr6))
+
+
+
 
 # print(arr4)
 # print(arr4.transpose())
