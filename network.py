@@ -1,16 +1,21 @@
 import numpy as np
 import random
+from activation_functions import Activation
 
 
 class network():
     
 
-    def __init__(self, layers, activation_function):
+    def __init__(self, layers, hidden_activation=Activation.relu, output_activation=Activation.softmax):
 
 
         self.layers = layers
 
-        self.activation_function = activation_function
+        self.num_layers = len(layers)
+
+        self.hidden_activation = hidden_activation
+
+        self.output_activation = output_activation
 
         # apparently a gaussian/normal distribution works well lol
         # linear does as well, but in the example he uses normal so ¯\_(ツ)_/¯
@@ -41,10 +46,10 @@ class network():
         # it makes calculating things easier in code
         self.weights = [np.random.randn(k, j) for j, k in zip(layers[:-1], layers[1:])]
 
-        self.z_vectors = []
+        #self.z_vectors = []
 
         # self.activations = [np.zeros(size) for size in self.layers]
-        self.activations = []
+        #self.activations = []
 
 
     # for some reason this doesn't actually take you to the right place on the webpage
@@ -52,7 +57,7 @@ class network():
 
     # a is activations for a layer, so it is a list
     # a is also the initial inputs to the network
-    def feedforward(self, a):
+    def feedforward(self, a, return_all_calculations=False):
         # biases and then weights because biases is each neuron, and we'll loop through 
         # of the lists of weights as part of the bias
 
@@ -61,10 +66,10 @@ class network():
         # because making another variable is just too much work
         
 
-        self.z_vectors = []
-        self.activations = [a]
+        z_vectors = []
+        activations = [a]
 
-        for b, w in zip(self.biases, self.weights):
+        for b, w, layer in zip(self.biases, self.weights, range(self.num_layers)):
             # think about how a dot product works:
             # multiply matrix rows by columns of the second matrix and add
             # this is the same as multiplying each weight by the activation and adding them together to see the final result
@@ -79,29 +84,29 @@ class network():
             # remember that we initialized the weights going TO each neuron, NOT FROM each neuron
             z = np.dot(w, a) + b
             
-            self.z_vectors.append(z)
-            a = self.activation_function.activate(z)
-            self.activations.append(a)
+            z_vectors.append(z)
+
+            if (layer + 1 == self.num_layers):
+                # https://machinelearningmastery.com/choose-an-activation-function-for-deep-learning/#:~:text=A%20neural%20network%20may%20have,using%20a%20linear%20activation%20function.
+                # https://www.youtube.com/watch?v=CqOfi41LfDw&list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1&index=2
+                # neural networks part 7 cross entropy derivatives and backpropagation    
+                a = self.output_activation.activate(z)
+            else:
+                a = self.hidden_activation.activate(z)
+                
+            activations.append(a)
 
             # and now we loop through all of the weights and activations and stuff for all the layers until we get to the end
             # and get our final output
 
             # each loop calculates the activations for a single layer, not single neurons
 
-
-        # a is now the activations for the final (output) layer
-        return a
-    
-
-    def get_outputs(self, a):
-        end = len(self.layers)
-        count = 1
-        for b, w in zip(self.biases, self.weights):
-            z = np.dot(w, a) + b
-            if # last layer of network
-                a = self.activation_function.activate(z)
-            count += 1
-        return a
+        if return_all_calculations:
+            # a is now the activations for the final (output) layer
+            # aka a holds the outputs of the neural net
+            return (a, z_vectors, activations)
+        else:
+            return a
 
     def train(self, training_data, epochs, mini_batch_size, learning_rate, testing_data=None):
         if testing_data:
@@ -141,10 +146,10 @@ class network():
             print("Epoch " + str(epoch + 1) + " finished out of " + str(epochs))
             print(f"eval: {self.evaluate(testing_data)} / {len(testing_data)}" )
 
-        thing = self.test_progress()
-        with open("thing.py", "w") as file:
-            file.write(str(thing))
-        print()
+        #thing = self.test_progress()
+        #with open("thing.py", "w") as file:
+        #    file.write(str(thing))
+        #print()
                        
 
     def cost(self, expected, actual):
@@ -175,7 +180,7 @@ class network():
     # https://www.kaggle.com/code/jhoward/how-does-a-neural-net-really-work
 
     def backpropagate(self, inputs, desired_outputs):
-        self.feedforward(inputs)
+        outputs, z_vectors, activations = self.feedforward(inputs, return_all_calculations=True)
 
         # can't do zeros_like() here because numpy is mean >:(
         weight_gradients = [np.zeros(w.shape) for w in self.weights]
@@ -184,7 +189,7 @@ class network():
 
         # elementwise multiplication (activation for each neuron multiplied by cost derivative of each neuron)
         
-        delta = self.cost_derivative(self.activations[-1], desired_outputs) * self.activation_function.derivative(self.z_vectors[-1])
+        delta = self.cost_derivative(outputs, desired_outputs) * self.hidden_activation.derivative(z_vectors[-1])
         # the derivatives for biases and weights are basically the same except that
         # to get the weight derivative, you multply the bias derivative by the weight
         # hence why we don't calculate it separately for both the weights and biases
@@ -202,7 +207,7 @@ class network():
         # [[1, 3, 5]
         #  [2, 4, 6]]
 
-        weight_gradients[-1] = np.dot(delta, self.activations[-2].transpose())
+        weight_gradients[-1] = np.dot(delta, activations[-2].transpose())
 
         # backprop and loop through each layer
 
@@ -210,7 +215,7 @@ class network():
         # next layer's nodes
         # and then multiply it by the derivative of the activation function going to it from the weighted inputs
         # from the previous layers
-        for layer in range(2, len(self.layers)):
+        for layer in range(2, self.num_layers):
             
 
             # there are two ways to do this: 
@@ -226,7 +231,7 @@ class network():
             # Where error_j is the error signal from the jth neuron in the output layer, weight_k is the weight that connects the kth neuron to the current neuron and output is the output for the current neuron.
             # https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/
 
-            activation_derivative = self.activation_function.derivative(self.z_vectors[-layer])
+            activation_derivative = self.hidden_activation.derivative(z_vectors[-layer])
             # need to transpose again
             # taking the nodes from the layer to the right and multiplying them and adding them up by delta/the gradient
             # then multiplying by the activation derivative
@@ -234,7 +239,7 @@ class network():
             bias_gradients[-layer] = delta
             # take the activations of the neurons from the layer to the left (the previous layer)
             # and then multiply it by the delta and add it together and so on
-            weight_gradients[-layer] = np.dot(delta, self.activations[-layer-1].transpose())
+            weight_gradients[-layer] = np.dot(delta, activations[-layer-1].transpose())
         
         return bias_gradients, weight_gradients
 
@@ -267,6 +272,8 @@ class network():
 
         # there are different cost functions so i could make a thing like my activations class but whatever
         return (actual_output - desired_output)
+    
+    
     
 
 def softmax(z):

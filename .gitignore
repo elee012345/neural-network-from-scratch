@@ -2,3 +2,6 @@
 /scripts
 /lib
 pyvenv.cfg
+/__pycache__
+/.vscode
+thing.py

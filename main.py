@@ -9,6 +9,6 @@ training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
 relu = activation_functions.relu_function()
 sigmoid = activation_functions.sigmoid_function()
 net = network([784, 30, 10], sigmoid)
-net.train(training_data, 1, 10, 3, testing_data=test_data)
+net.train(training_data, 5, 10, 3, testing_data=test_data)
 
 
