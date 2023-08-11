@@ -3,18 +3,20 @@ import random
 from activation_functions import Activation
 
 
-class network():
+class Network():
     
 
-    def __init__(self, layers, hidden_activation=Activation.relu, output_activation=Activation.softmax):
+    def __init__(self, layers, hidden_activation=Activation.sigmoid, output_activation=Activation.softmax):
+        # https://machinelearningmastery.com/choose-an-activation-function-for-deep-learning/#:~:text=A%20neural%20network%20may%20have,using%20a%20linear%20activation%20function.
+        # https://www.youtube.com/watch?v=CqOfi41LfDw&list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1&index=2
+        # neural networks part 7 cross entropy derivatives and backpropagation    
+        # https://ml-cheatsheet.readthedocs.io/en/latest/activation_functions.html
 
+        # idk it depends on the application what type of activation function you want to use
 
         self.layers = layers
-
         self.num_layers = len(layers)
-
         self.hidden_activation = hidden_activation
-
         self.output_activation = output_activation
 
         # apparently a gaussian/normal distribution works well lol
@@ -45,11 +47,6 @@ class network():
         # think of it as the weights going TO each neuron rather than FROM each neuron
         # it makes calculating things easier in code
         self.weights = [np.random.randn(k, j) for j, k in zip(layers[:-1], layers[1:])]
-
-        #self.z_vectors = []
-
-        # self.activations = [np.zeros(size) for size in self.layers]
-        #self.activations = []
 
 
     # for some reason this doesn't actually take you to the right place on the webpage
@@ -87,9 +84,6 @@ class network():
             z_vectors.append(z)
 
             if (layer + 1 == self.num_layers):
-                # https://machinelearningmastery.com/choose-an-activation-function-for-deep-learning/#:~:text=A%20neural%20network%20may%20have,using%20a%20linear%20activation%20function.
-                # https://www.youtube.com/watch?v=CqOfi41LfDw&list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1&index=2
-                # neural networks part 7 cross entropy derivatives and backpropagation    
                 a = self.output_activation.activate(z)
             else:
                 a = self.hidden_activation.activate(z)
@@ -144,17 +138,13 @@ class network():
                 ]
 
             print("Epoch " + str(epoch + 1) + " finished out of " + str(epochs))
+            # different ones for if you have vs don't have test data, differentiate between the two prints
             print(f"eval: {self.evaluate(testing_data)} / {len(testing_data)}" )
 
         #thing = self.test_progress()
         #with open("thing.py", "w") as file:
         #    file.write(str(thing))
         #print()
-                       
-
-    def cost(self, expected, actual):
-        err = (expected - actual)
-        return err * err
     
     def test_progress(self):
         dif = [(self.feedforward(inputs), desired) for inputs, desired in self.vectorized_testing_data]
@@ -273,16 +263,6 @@ class network():
         # there are different cost functions so i could make a thing like my activations class but whatever
         return (actual_output - desired_output)
     
-    
-    
-
-def softmax(z):
-    exps = np.exp(z - np.max(z))
-    return exps / np.sum(exps)
-
-def othersoftmax(z):
-    exp_ = np.exp(z)
-    return exp_/np.sum(exp_)
 
 def vectorize(digit):
     vector = np.zeros((10, 1))
