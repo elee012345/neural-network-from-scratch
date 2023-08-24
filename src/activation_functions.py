@@ -1,6 +1,16 @@
 import numpy as np
 class Activation:
     # calculates results for entire layers, not individual nodes
+    class leaky_relu:
+        # stores individual elements in lists which is annoying
+        @staticmethod
+        def activate(z, alpha=0.01):
+            return np.maximum(z, alpha * z)
+        
+        @staticmethod
+        def derivative(z, alpha=0.01):
+            return np.where(z > 0, 1, alpha)
+            
     class relu:
         # stores individual elements in lists which is annoying
         @staticmethod
@@ -9,9 +19,16 @@ class Activation:
         
         @staticmethod
         def derivative(z):
-            z[z <= 0] = 0
-            z[z > 0] = 1
-            return z
+            return np.greater(z, 0).astype(int)
+        
+    class tanh:
+        @staticmethod
+        def activate(z):
+            return np.tanh(z)
+        
+        @staticmethod
+        def derivative(z):
+            return 1 - ( np.tanh(z)**2 )
         
     class sigmoid:
         @staticmethod
@@ -21,7 +38,7 @@ class Activation:
         @staticmethod
         def derivative(z):
             activated = 1 / (1 + np.exp(-z)) # sigmoid activation
-            return np.multiply(activated, ( 1 - activated))
+            return np.multiply(activated, (1 - activated))
         
     class softmax():
         # https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative/

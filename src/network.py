@@ -82,12 +82,10 @@ class Network():
             z = np.dot(w, a) + b
             
             z_vectors.append(z)
-
             if (layer + 1 == self.num_layers):
                 a = self.output_activation.activate(z)
             else:
                 a = self.hidden_activation.activate(z)
-                
             activations.append(a)
 
             # and now we loop through all of the weights and activations and stuff for all the layers until we get to the end
@@ -107,44 +105,18 @@ class Network():
             self.vectorized_testing_data = [(expected, vectorize(desired)) for (expected, desired) in testing_data]
 
         for epoch in range(epochs):
-            random.shuffle(training_data)
-            mini_batches = [training_data[batch:batch + mini_batch_size] for batch in range(0, len(training_data), mini_batch_size)]
-            for batch in mini_batches:
-                # holds the accumulated gradients within the mini batch
-                bias_gradients = [np.zeros(b.shape) for b in self.biases]
-                weight_gradients = [np.zeros(w.shape) for w in self.weights]
-                for inputs, desired_outputs in batch:
-                    delta_bias_gradients, delta_weight_gradients = self.backpropagate(inputs, desired_outputs)
-                    # accumulate gradients from the mini batch
-                    bias_gradients = [
-                        b + db
-                        for b, db in zip(bias_gradients, delta_bias_gradients)
-                    ]
-                    weight_gradients = [
-                        w + dw
-                        for w, dw in zip(weight_gradients, delta_weight_gradients)
-                    ]
-
-                
-                # taking the gradient, multiplying it by the average of the learning rate for the mini batch size,
-                # and subtracting it from the biases to update them according to the gradient
-                self.biases = [
-                    bias - (learning_rate / mini_batch_size * bias_gradient)
-                    for bias, bias_gradient in zip(self.biases, bias_gradients)
-                ]
-                self.weights = [
-                    weight - (learning_rate / mini_batch_size * weight_gradient)
-                    for weight, weight_gradient in zip(self.weights, weight_gradients)
-                ]
-
-            print("Epoch " + str(epoch + 1) + " finished out of " + str(epochs))
+            self.train_epoch(training_data, mini_batch_size, learning_rate)
+            
+            print(f"Epoch {epoch + 1} finished out of {epochs}")
             # different ones for if you have vs don't have test data, differentiate between the two prints
-            print(f"eval: {self.evaluate(testing_data)} / {len(testing_data)}" )
+            evaluated = self.evaluate(testing_data)
+            print(f"Argmax evaluation: {evaluated} / {len(testing_data)}" )
+            print(f"Accuracy: {evaluated/len(testing_data)}")
 
-        #thing = self.test_progress()
-        #with open("thing.py", "w") as file:
-        #    file.write(str(thing))
-        #print()
+        thing = self.test_progress()
+        with open("thing.py", "w") as file:
+            file.write(str(thing))
+        print()
     
     def test_progress(self):
         dif = [(self.feedforward(inputs), desired) for inputs, desired in self.vectorized_testing_data]
@@ -162,6 +134,50 @@ class Network():
         test_results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in test_data]
         return sum(int(x == y) for (x, y) in test_results)
+
+    def train_epoch(self, training_data, mini_batch_size, learning_rate):
+        random.shuffle(training_data)
+        mini_batches = [training_data[batch:batch + mini_batch_size] for batch in range(0, len(training_data), mini_batch_size)]
+        self.train_mini_batches(mini_batches, mini_batch_size, learning_rate)
+        
+
+    def train_mini_batches(self, mini_batches, mini_batch_size, learning_rate):
+        for mini_batch in mini_batches:
+            # holds the accumulated gradients within the mini batch
+            mini_batch_bias_gradients, mini_batch_weight_gradients = self.train_mini_batch(mini_batch)
+            self.update_gradients(learning_rate, mini_batch_size, mini_batch_bias_gradients, mini_batch_weight_gradients)
+
+    def train_mini_batch(self, batch):
+        # holds the accumulated gradients within the mini batch
+        bias_gradients = [np.zeros(b.shape) for b in self.biases]
+        weight_gradients = [np.zeros(w.shape) for w in self.weights]
+        for inputs, desired_outputs in batch:
+            delta_bias_gradients, delta_weight_gradients = self.backpropagate(inputs, desired_outputs)
+            # accumulate gradients from the mini batch
+            bias_gradients = [
+                b + db
+                for b, db in zip(bias_gradients, delta_bias_gradients)
+            ]
+            weight_gradients = [
+                w + dw
+                for w, dw in zip(weight_gradients, delta_weight_gradients)
+            ]
+            
+        return bias_gradients, weight_gradients
+        
+    def update_gradients(self, learning_rate, mini_batch_size, bias_gradients, weight_gradients):
+        # taking the gradient, multiplying it by the average of the learning rate for the mini batch size,
+        # and subtracting it from the biases to update them according to the gradient
+        self.biases = [
+            bias - (learning_rate / mini_batch_size * bias_gradient)
+            for bias, bias_gradient in zip(self.biases, bias_gradients)
+        ]
+        self.weights = [
+            weight - (learning_rate / mini_batch_size * weight_gradient)
+            for weight, weight_gradient in zip(self.weights, weight_gradients)
+        ]
+            
+            
 
 
     # in this function we try to reduce the cost
@@ -226,10 +242,14 @@ class Network():
             # taking the nodes from the layer to the right and multiplying them and adding them up by delta/the gradient
             # then multiplying by the activation derivative
             delta = np.dot(self.weights[-layer + 1].transpose(), delta) * activation_derivative
+            #print(activation_derivative)
+            #print(delta)
+            #print()
             bias_gradients[-layer] = delta
             # take the activations of the neurons from the layer to the left (the previous layer)
             # and then multiply it by the delta and add it together and so on
             weight_gradients[-layer] = np.dot(delta, activations[-layer-1].transpose())
+
         
         return bias_gradients, weight_gradients
 
